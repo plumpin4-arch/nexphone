@@ -388,8 +388,8 @@ app.put('/api/products/:id', authenticate, requireAdmin, async (req, res) => {
   }
 });
 
-// Upload product image (Admin only)
-app.post('/api/upload', authenticate, requireAdmin, (req, res) => {
+// Upload product image (Admin only) — อัปโหลดขึ้น Cloudinary เพื่อให้รูปอยู่ถาวร ไม่หายเมื่อ Render redeploy
+app.post('/api/upload', authenticate, requireAdmin, async (req, res) => {
   const { filename, data } = req.body || {};
   if (!filename || !data) return res.status(400).json({ error: 'Filename and data required' });
 
@@ -397,6 +397,40 @@ app.post('/api/upload', authenticate, requireAdmin, (req, res) => {
   const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
   if (!allowed.includes(ext)) return res.status(400).json({ error: 'Unsupported file type' });
 
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
+
+  // ถ้าตั้งค่า Cloudinary ไว้ ให้อัปโหลดขึ้น Cloudinary (แนะนำ — รูปจะอยู่ถาวร)
+  if (cloudName && uploadPreset) {
+    try {
+      const buffer = Buffer.from(data, 'base64');
+      const mimeType = ext === '.jpg' ? 'image/jpeg' : `image/${ext.slice(1)}`;
+      const blob = new Blob([buffer], { type: mimeType });
+
+      const form = new FormData();
+      form.append('file', blob, filename);
+      form.append('upload_preset', uploadPreset);
+
+      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: form
+      });
+      const cloudData = await cloudRes.json();
+
+      if (!cloudRes.ok || !cloudData.secure_url) {
+        console.error('Cloudinary upload error:', cloudData);
+        return res.status(502).json({ error: 'อัปโหลดขึ้น Cloudinary ไม่สำเร็จ ตรวจสอบค่า CLOUDINARY_CLOUD_NAME / CLOUDINARY_UPLOAD_PRESET' });
+      }
+
+      return res.json({ url: cloudData.secure_url });
+    } catch (err) {
+      console.error('Cloudinary upload exception:', err);
+      return res.status(500).json({ error: 'อัปโหลดขึ้น Cloudinary ล้มเหลว' });
+    }
+  }
+
+  // Fallback: เก็บลงดิสก์เซิร์ฟเวอร์ (ใช้ได้เฉพาะตอนรันในเครื่องตัวเองเท่านั้น — บน Render ไฟล์จะหายเมื่อ redeploy)
+  console.warn('⚠️ ไม่ได้ตั้งค่า CLOUDINARY_CLOUD_NAME/CLOUDINARY_UPLOAD_PRESET — ใช้การเก็บไฟล์แบบชั่วคราวแทน (จะหายเมื่อ redeploy บน Render)');
   const safeName = path.basename(filename, ext).replace(/[^a-z0-9-_]/gi, '_');
   const newName = `${Date.now()}-${safeName}${ext}`;
   const imagesDir = path.join(__dirname, 'images');
