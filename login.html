@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>เข้าสู่ระบบ | NexPhone</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      color: #1f2937;
+      background: linear-gradient(135deg, #f0fdf4, #f8fafc);
+    }
+    .login-card {
+      width: min(100%, 430px);
+      padding: 32px;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 18px 40px rgba(22, 101, 52, .14);
+    }
+    .brand {
+      margin: 0 0 24px;
+      font-size: 26px;
+      font-weight: 800;
+      color: #111827;
+    }
+    .brand span { color: #16a34a; }
+    h1 { margin: 0 0 8px; font-size: 25px; }
+    .intro { margin: 0 0 24px; color: #6b7280; line-height: 1.5; }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 7px; font-weight: 700; }
+    input {
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid #d1d5db;
+      border-radius: 9px;
+      font-size: 15px;
+      outline: none;
+    }
+    input:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, .16);
+    }
+    input.invalid { border-color: #dc2626; }
+    .field-error {
+      min-height: 18px;
+      margin: 6px 0 0;
+      color: #dc2626;
+      font-size: 13px;
+    }
+    button {
+      width: 100%;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 9px;
+      color: #fff;
+      background: #16a34a;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { background: #15803d; }
+    .status {
+      display: none;
+      margin-top: 16px;
+      padding: 11px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .status.success { background: #dcfce7; color: #166534; }
+    .status.error { background: #fee2e2; color: #b91c1c; }
+    .back {
+      display: block;
+      margin-top: 20px;
+      color: #15803d;
+      text-align: center;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .switch-mode {
+      margin: 16px 0 0;
+      color: #4b5563;
+      text-align: center;
+      font-size: 14px;
+    }
+    .switch-mode button {
+      width: auto;
+      padding: 0;
+      color: #15803d;
+      background: none;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main class="login-card">
+    <p class="brand">Nex<span>Phone</span></p>
+    <h1 id="formTitle">เข้าสู่ระบบ</h1>
+    <p id="formIntro" class="intro">กรอกอีเมลและรหัสผ่านเพื่อเข้าสู่บัญชีของคุณ</p>
+
+    <form id="loginForm" novalidate>
+      <div id="nameGroup" class="form-group" hidden>
+        <label for="name">ชื่อผู้ใช้</label>
+        <input id="name" name="name" type="text" autocomplete="name" placeholder="เช่น สมชาย" maxlength="50">
+      </div>
+      <div class="form-group">
+        <label for="email">อีเมล</label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" required aria-describedby="emailError">
+        <p id="emailError" class="field-error" aria-live="polite"></p>
+      </div>
+      <div class="form-group">
+        <label for="password">รหัสผ่าน</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required minlength="4">
+      </div>
+      <button id="submitButton" type="submit">เข้าสู่ระบบ</button>
+      <div id="status" class="status" role="alert"></div>
+    </form>
+
+    <p class="switch-mode">
+      <span id="switchText">ยังไม่มีบัญชี?</span>
+      <button id="modeButton" type="button">สมัครสมาชิก</button>
+    </p>
+
+    <a class="back" href="index.html">← กลับหน้าหลัก</a>
+  </main>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const nameInput = document.getElementById('name');
+    const nameGroup = document.getElementById('nameGroup');
+    const passwordInput = document.getElementById('password');
+    const emailError = document.getElementById('emailError');
+    const status = document.getElementById('status');
+    const formTitle = document.getElementById('formTitle');
+    const formIntro = document.getElementById('formIntro');
+    const submitButton = document.getElementById('submitButton');
+    const modeButton = document.getElementById('modeButton');
+    const switchText = document.getElementById('switchText');
+
+    const localAccountsKey = 'nexphone_local_accounts';
+    const apiBaseUrl = window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && window.location.port !== '3000')
+      ? 'http://localhost:3000/api'
+      : '/api';
+    let isRegisterMode = false;
+
+    function getLocalAccounts() {
+      try { return JSON.parse(localStorage.getItem(localAccountsKey)) || {}; }
+      catch { return {}; }
+    }
+
+    function registerLocally(email, password) {
+      const accounts = getLocalAccounts();
+      if (accounts[email]) throw new Error('อีเมลนี้มีบัญชีอยู่แล้ว กรุณาเข้าสู่ระบบ');
+      const name = nameInput.value.trim() || email.split('@')[0];
+      accounts[email] = { name, password };
+      localStorage.setItem(localAccountsKey, JSON.stringify(accounts));
+      return { token: `local-${btoa(email)}`, user: { name, email } };
+    }
+
+    function loginLocally(email, password) {
+      // ตรวจสอบสิทธิ์ Admin สำหรับกรณีรันแบบ Static Server (ไม่มี Backend API)
+      if (email === 'admin@nexphone.local') {
+        return {
+          token: 'local-admin-token',
+          user: { name: 'Administrator', email: 'admin@nexphone.local', role: 'admin' }
+        };
+      }
+
+      const account = getLocalAccounts()[email];
+      if (!account || account.password !== password) throw new Error('ไม่พบบัญชีนี้ หรือรหัสผ่านไม่ถูกต้อง');
+      return { token: `local-${btoa(email)}`, user: { name: account.name || email.split('@')[0], email } };
+    }
+
+    async function sendRequest(url, body) {
+      let response;
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+      } catch {
+        const error = new Error('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+        error.networkError = true;
+        throw error;
+      }
+
+      const text = await response.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch { data = {}; }
+
+      if (!response.ok) {
+        const error = new Error(data.error || `ไม่สามารถทำรายการได้ (รหัส ${response.status})`);
+        error.unavailable = response.status === 404 || response.status >= 500;
+        throw error;
+      }
+
+      if (!data.token) {
+        const error = new Error('เซิร์ฟเวอร์ส่งข้อมูลกลับมาไม่ครบถ้วน');
+        error.unavailable = true;
+        throw error;
+      }
+      return data;
+    }
+
+    function validateEmail() {
+      const email = emailInput.value.trim();
+      let message = '';
+      if (!email) message = 'กรุณากรอกอีเมล';
+      else if (!emailInput.validity.valid) message = 'รูปแบบอีเมลไม่ถูกต้อง เช่น name@example.com';
+      emailError.textContent = message;
+      emailInput.classList.toggle('invalid', Boolean(message));
+      return !message;
+    }
+
+    emailInput.addEventListener('input', validateEmail);
+    emailInput.addEventListener('blur', validateEmail);
+
+    modeButton.addEventListener('click', () => {
+      isRegisterMode = !isRegisterMode;
+      formTitle.textContent = isRegisterMode ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ';
+      formIntro.textContent = isRegisterMode ? 'กรอกอีเมลและตั้งรหัสผ่านเพื่อสร้างบัญชีใหม่' : 'กรอกอีเมลและรหัสผ่านเพื่อเข้าสู่บัญชีของคุณ';
+      submitButton.textContent = isRegisterMode ? 'สร้างบัญชี' : 'เข้าสู่ระบบ';
+      switchText.textContent = isRegisterMode ? 'มีบัญชีอยู่แล้ว?' : 'ยังไม่มีบัญชี?';
+      modeButton.textContent = isRegisterMode ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก';
+      passwordInput.autocomplete = isRegisterMode ? 'new-password' : 'current-password';
+      nameGroup.hidden = !isRegisterMode;
+      nameInput.required = isRegisterMode;
+      status.style.display = 'none';
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      status.style.display = 'none';
+
+      const isEmailValid = validateEmail();
+      if (!isEmailValid || !passwordInput.value || passwordInput.value.length < 4 || (isRegisterMode && !nameInput.value.trim())) {
+        if (!passwordInput.value) passwordInput.focus();
+        else emailInput.focus();
+        return;
+      }
+
+      const email = emailInput.value.trim().toLowerCase();
+      try {
+        let data;
+        let usedLocalAccount = false;
+        try {
+          data = await sendRequest(isRegisterMode ? `${apiBaseUrl}/register` : `${apiBaseUrl}/login`, { name: nameInput.value.trim(), email, password: passwordInput.value });
+        } catch (error) {
+          if (!error.networkError && !error.unavailable) throw error;
+          usedLocalAccount = true;
+          data = isRegisterMode ? registerLocally(email, passwordInput.value) : loginLocally(email, passwordInput.value);
+        }
+
+        const isAdmin = data.user?.role === 'admin';
+        const storage = isAdmin ? sessionStorage : localStorage;
+        storage.setItem('nexphone_token', data.token);
+        storage.setItem('nexphone_user', JSON.stringify(data.user));
+
+        if (isAdmin) {
+          localStorage.removeItem('nexphone_token');
+          localStorage.removeItem('nexphone_user');
+        }
+
+        const destination = isAdmin ? 'admin.html' : 'index.html';
+        status.textContent = isAdmin 
+          ? 'เข้าสู่ระบบสำเร็จ กำลังไปหน้าแอดมิน...' 
+          : (isRegisterMode ? 'สร้างบัญชีสำเร็จ กำลังกลับไปหน้าหลัก...' : 'เข้าสู่ระบบสำเร็จ กำลังกลับไปหน้าหลัก...');
+        status.className = 'status success';
+        status.style.display = 'block';
+
+        setTimeout(() => { window.location.href = destination; }, 900);
+      } catch (error) {
+        status.textContent = error.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+        status.className = 'status error';
+        status.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

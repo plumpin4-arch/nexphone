@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexPhone | ศูนย์รวมมือถือชั้นนำ</title>
+  <style>
+    :root {
+      --green: #22c55e;
+      --green-dark: #15803d;
+      --text: #0f172a;
+      --muted: #64748b;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+      color: var(--text);
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.88);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(10px);
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+      background: rgba(255, 255, 255, 0.9);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .logo {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .logo span {
+      color: var(--green);
+    }
+
+    #userMenu {
+      color: #15803d;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    #logoutButton, #renameButton {
+      margin-left: 8px;
+      padding: 7px 11px;
+      border: 1px solid #22c55e;
+      border-radius: 8px;
+      background: #fff;
+      color: #15803d;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 28px;
+      align-items: center;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: #334155;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    nav ul li a:hover {
+      color: var(--green-dark);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 42px;
+      padding: 56px 40px;
+      align-items: center;
+      flex: 1;
+      background:
+        radial-gradient(circle at top right, rgba(34, 197, 94, 0.14), transparent 30%),
+        linear-gradient(135deg, rgba(239, 246, 255, 0.9), rgba(240, 253, 244, 0.95));
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      padding: 6px 12px;
+      background: #dcfce7;
+      color: #166534;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .hero-text h1 {
+      font-size: 44px;
+      margin-bottom: 12px;
+      line-height: 1.15;
+      color: #0f172a;
+    }
+
+    .hero-text p {
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: 24px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .hero-actions a,
+    .hero-actions button {
+      text-decoration: none;
+      display: inline-block;
+      padding: 11px 18px;
+      border-radius: 999px;
+      font-weight: 800;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .hero-actions .primary {
+      background: linear-gradient(90deg, var(--green), var(--green-dark));
+      color: #fff;
+      box-shadow: 0 10px 22px rgba(34, 197, 94, 0.25);
+    }
+
+    .hero-actions .secondary {
+      background: #fff;
+      color: var(--green-dark);
+      border: 1px solid #bbf7d0;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hero-stat {
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(34, 197, 94, 0.15);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-stat strong {
+      display: block;
+      font-size: 18px;
+      color: var(--green-dark);
+      margin-bottom: 4px;
+    }
+
+    .hero-stat span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .hero-image {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(240, 253, 244, 0.85));
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-image img {
+      width: 100%;
+      max-width: 520px;
+      height: auto;
+      border-radius: 18px;
+      object-fit: cover;
+    }
+
+    .products {
+      padding: 42px 40px 56px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-head h2 {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 22px;
+      margin-top: 16px;
+    }
+
+    .product-item {
+      background: linear-gradient(145deg, #ffffff, #f8fafc);
+      padding: 16px;
+      border-radius: 18px;
+      text-align: center;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+      border: 1px solid #e5e7eb;
+    }
+
+    .product-item:hover {
+      transform: translateY(-7px);
+      box-shadow: 0 18px 34px rgba(15, 23, 42, 0.12);
+    }
+
+    .product-item img {
+      width: 100%;
+      height: 215px;
+      object-fit: contain;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      background: #fff;
+      border: 1px solid #f1f5f9;
+    }
+
+    .product-item h3 {
+      font-size: 15px;
+      margin: 8px 0 6px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .product-item p {
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    .price-tag {
+      color: var(--green-dark);
+      font-weight: 800;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    .detail-btn {
+      margin-top: 12px;
+      border: none;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      color: white;
+      padding: 9px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: 12px;
+      box-shadow: 0 8px 16px rgba(34, 197, 94, 0.2);
+    }
+
+    .detail-btn:hover {
+      background: #1ea54d;
+    }
+
+    .cta-link {
+      display: inline-block;
+      margin-top: 28px;
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 26px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 800;
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-image {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-body h3 {
+      margin-bottom: 8px;
+      color: #111827;
+    }
+
+    .modal-price {
+      color: #22c55e;
+      font-weight: bold;
+      margin: 8px 0;
+      font-size: 15px;
+    }
+
+    .modal-specs {
+      color: #4b5563;
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+
+    .close-btn {
+      float: right;
+      border: none;
+      background: transparent;
+      font-size: 22px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 40px 20px;
+      }
+
+      nav {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 20px;
+      }
+
+      nav ul {
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .hero-text h1 {
+        font-size: 32px;
+      }
+
+      .products-grid {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <div class="logo">Nex<span>Phone</span></div>
+      <ul>
+        <li><a href="index.html">หน้าแรก</a></li>
+        <li><a href="products.html">สินค้าทั้งหมด</a></li>
+        <li><a href="contact.html">ติดต่อเรา</a></li>
+        <li id="loginLink"><a href="login.html">เข้าสู่ระบบ</a></li>
+        <li id="userMenu" hidden><span id="userName"></span> <button id="renameButton" type="button">เปลี่ยนชื่อ</button> <button id="logoutButton" type="button">ออกจากระบบ</button></li>
+      </ul>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-text">
+        <div class="hero-badge">NexPhone 2026 Collection</div>
+        <h1>ศูนย์รวมสมาร์ทโฟนทุกแบรนด์</h1>
+        <p>เลือกมือถือที่ใช่สำหรับคุณ ด้วยสินค้าแบรนด์ชั้นนำ ราคาคุ้ม และดีไซน์ที่ดูทันสมัยตั้งแต่การเปิดหน้าเว็บ</p>
+        <div class="hero-actions">
+          <a class="primary" href="products.html">เลือกสินค้าตอนนี้</a>
+          <a class="secondary" href="contact.html">ติดต่อเรา</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <strong>5+</strong>
+            <span>รุ่นขายดี</span>
+          </div>
+          <div class="hero-stat">
+            <strong>30k+</strong>
+            <span>ผู้เข้าชมต่อเดือน</span>
+          </div>
+          <div class="hero-stat">
+            <strong>100%</strong>
+            <span>อัพเดตสเปกใหม่</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-image">
+        <img src="images/มือถือใหม่-removebg-preview.png" alt="Samsung Galaxy Z Fold6">
+      </div>
+    </section>
+
+    <section class="products">
+      <div class="section-head">
+        <div>
+          <h2>สินค้าขายดี</h2>
+          <p>แนะนำรุ่นยอดนิยมที่ตอบโจทย์ทุกไลฟ์สไตล์</p>
+        </div>
+      </div>
+      <div class="products-grid">
+        <div class="product-item">
+          <img src="images/i phone 14 pro max.jpg" alt="iPhone 14 Pro Max">
+          <h3>iPhone 14 Pro Max</h3>
+          <p>6.7" AMOLED | A16 Bionic</p>
+          <div class="price-tag">฿49,999</div>
+          <button type="button" class="detail-btn">ดูรายละเอียด</button>
+        </div>
+        <div class="product-item">
+          <img src="images/iphone-14-pro.jpg" alt="iPhone 14 Pro">
+          <h3>iPhone 14 Pro</h3>
+          <p>6.1" AMOLED | A16 Bionic</p>
+          <div class="price-tag">฿44,999</div>
+          <button type="button" class="detail-btn">ดูรายละเอียด</button>
+        </div>
+        <div class="product-item">
+          <img src="images/samsung-s24-ultra.png" alt="Samsung S24 Ultra">
+          <h3>Samsung S24 Ultra</h3>
+          <p>6.8" AMOLED | SD 8 Gen 3</p>
+          <div class="price-tag">฿47,999</div>
+          <button type="button" class="detail-btn">ดูรายละเอียด</button>
+        </div>
+        <div class="product-item">
+          <img src="images/samsung-galaxy-s24.png" alt="Samsung Galaxy S24">
+          <h3>Samsung Galaxy S24</h3>
+          <p>6.2" AMOLED | SD 8 Gen 3</p>
+          <div class="price-tag">฿42,999</div>
+          <button type="button" class="detail-btn">ดูรายละเอียด</button>
+        </div>
+        <div class="product-item">
+          <img src="https://static-jaymart.com/ecom/public/2j2v9tq0k6r2TQBG5Ro8m1sLJ93.jpg" alt="Samsung Galaxy Z Fold6">
+          <h3>Samsung Galaxy Z Fold6</h3>
+          <p>7.6" AMOLED | SD 8 Gen 3</p>
+          <div class="price-tag">฿59,999</div>
+          <button type="button" class="detail-btn">ดูรายละเอียด</button>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="products.html" class="cta-link">ดูสินค้าทั้งหมด →</a>
+      </div>
+    </section>
+
+    <div class="modal" id="detailModal">
+      <div class="modal-content">
+        <img class="modal-image" id="modalImage" src="" alt="">
+        <div class="modal-body">
+          <button class="close-btn" type="button" aria-label="ปิด">×</button>
+          <h3 id="modalTitle"></h3>
+          <p class="modal-price" id="modalPrice"></p>
+          <p class="modal-specs" id="modalSpecs"></p>
+          <p id="modalDesc"></p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const userMenu = document.getElementById('userMenu');
+      const userName = document.getElementById('userName');
+      const logoutButton = document.getElementById('logoutButton');
+      const loginLink = document.getElementById('loginLink');
+      const apiBaseUrl = window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && window.location.port !== '3000')
+        ? 'http://localhost:3000/api'
+        : '/api';
+
+      function getStoredUser() {
+        const token = localStorage.getItem('nexphone_token');
+        if (!token) return null;
+
+        try {
+          const savedUser = JSON.parse(localStorage.getItem('nexphone_user'));
+          if (savedUser?.name) return savedUser;
+        } catch {}
+
+        try {
+          let email = '';
+          if (token.startsWith('local-')) {
+            email = atob(token.slice(6));
+            const accounts = JSON.parse(localStorage.getItem('nexphone_local_accounts')) || {};
+            if (accounts[email]?.name) return { name: accounts[email].name, email };
+          } else {
+            const payload = token.split('.')[1];
+            email = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/'))).email || '';
+          }
+          if (email) return { name: email.split('@')[0], email };
+        } catch {}
+        return null;
+      }
+
+      async function hydrateUserSession() {
+        const token = localStorage.getItem('nexphone_token');
+        if (!token) return null;
+
+        const storedUser = getStoredUser();
+        if (storedUser?.name) {
+          localStorage.setItem('nexphone_user', JSON.stringify(storedUser));
+          return storedUser;
+        }
+
+        try {
+          const response = await fetch(`${apiBaseUrl}/me`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (!response.ok) return null;
+          const data = await response.json();
+          const user = { name: data.name || data.email?.split('@')[0], email: data.email };
+          localStorage.setItem('nexphone_user', JSON.stringify(user));
+          return user;
+        } catch {
+          return null;
+        }
+      }
+
+      (async () => {
+        const user = await hydrateUserSession();
+        if (user?.name) {
+          userName.textContent = `สวัสดี, ${user.name}`;
+          userMenu.hidden = false;
+          if (loginLink) loginLink.hidden = true;
+        }
+      })();
+
+      logoutButton?.addEventListener('click', () => {
+        localStorage.removeItem('nexphone_token');
+        localStorage.removeItem('nexphone_user');
+        window.location.href = 'login.html';
+      });
+
+      const renameButton = document.getElementById('renameButton');
+      renameButton?.addEventListener('click', async () => {
+        const token = localStorage.getItem('nexphone_token');
+        if (!token) return;
+
+        const currentUser = getStoredUser();
+        const newName = prompt('ตั้งชื่อผู้ใช้ใหม่ (2-50 ตัวอักษร):', currentUser?.name || '');
+        if (newName === null) return; // ผู้ใช้กดยกเลิก
+
+        const trimmed = newName.trim();
+        if (trimmed.length < 2 || trimmed.length > 50) {
+          alert('ชื่อผู้ใช้ต้องมีความยาว 2-50 ตัวอักษร');
+          return;
+        }
+
+        try {
+          const response = await fetch(`${apiBaseUrl}/me`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ name: trimmed })
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || 'เปลี่ยนชื่อไม่สำเร็จ');
+
+          const updatedUser = { name: data.name, email: data.email };
+          localStorage.setItem('nexphone_user', JSON.stringify(updatedUser));
+          userName.textContent = `สวัสดี, ${data.name}`;
+          alert('เปลี่ยนชื่อผู้ใช้เรียบร้อยแล้ว');
+        } catch (err) {
+          alert(err.message || 'ไม่สามารถเปลี่ยนชื่อผู้ใช้ได้ในขณะนี้');
+        }
+      });
+
+      const modal = document.getElementById('detailModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalPrice = document.getElementById('modalPrice');
+      const modalSpecs = document.getElementById('modalSpecs');
+      const modalDesc = document.getElementById('modalDesc');
+      const modalImage = document.getElementById('modalImage');
+      const closeBtn = document.querySelector('.close-btn');
+
+      function closeModal() {
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+      }
+
+      function openModal(card) {
+        const title = card.querySelector('h3')?.textContent?.trim() || 'สินค้าของเรา';
+        const price = card.querySelector('.price-tag')?.textContent?.trim() || '';
+        const image = card.querySelector('img')?.src || '';
+        let desc = '';
+        let fullSpecs = '';
+
+        if (title.includes('iPhone 14 Pro Max')) {
+          fullSpecs = 'จอ: 6.7" OLED • ชิป: A16 Bionic • RAM: 6GB • แบต: 4323mAh • กล้อง: 48MP + 12MP + 12MP';
+          desc = 'iPhone 14 Pro Max ให้ภาพถ่ายระดับโปรและประสิทธิภาพที่รวดเร็วสุดคุ้มสำหรับผู้ใช้ที่ต้องการสมาร์ทโฟนระดับพรีเมียม';
+        } else if (title.includes('iPhone 14 Pro')) {
+          fullSpecs = 'จอ: 6.1" OLED • ชิป: A16 Bionic • RAM: 6GB • แบต: 3200mAh • กล้อง: 48MP + 12MP + 12MP';
+          desc = 'iPhone 14 Pro มาพร้อม Dynamic Island และประสิทธิภาพระดับท็อปในขนาดที่พอดีมือ';
+        } else if (title.includes('S24 Ultra')) {
+          fullSpecs = 'จอ: 6.8" AMOLED • ชิป: Snapdragon 8 Gen 3 • RAM: 12GB • แบต: 5000mAh • กล้อง: 200MP + 50MP + 12MP + 10MP';
+          desc = 'Samsung Galaxy S24 Ultra สุดยอดสมาร์ทโฟนเรือธงพร้อม Galaxy AI และปากกา S Pen ในตัว';
+        } else if (title.includes('Samsung S24') || title.includes('Samsung Galaxy S24')) {
+          fullSpecs = 'จอ: 6.2" AMOLED • ชิป: Snapdragon 8 Gen 3 • RAM: 8GB • แบต: 4000mAh • กล้อง: 50MP + 10MP + 12MP';
+          desc = 'Samsung S24 ให้ความสมดุลของการใช้งานทั่วไปและความสามารถของกล้องได้ดี';
+        } else if (title.includes('Xiaomi 14')) {
+          fullSpecs = 'จอ: 6.36" AMOLED • ชิป: Snapdragon 8 Gen 3 • RAM: 8GB • แบต: 4610mAh • กล้อง: 50MP + 50MP';
+          desc = 'Xiaomi 14 ให้ประสิทธิภาพที่ดีและดีไซน์ที่ทันสมัยในราคาที่เข้าถึงง่าย';
+        } else if (title.includes('Google Pixel 8 Pro')) {
+          fullSpecs = 'จอ: 6.7" OLED • ชิป: Tensor G3 • RAM: 12GB • แบต: 5050mAh • กล้อง: 50MP + 48MP + 48MP';
+          desc = 'Google Pixel 8 Pro เน้นภาพถ่ายและ AI ที่ชาญฉลาด พร้อมระบบอัปเดตที่ต่อเนื่อง';
+        } else if (title.includes('OnePlus 12')) {
+          fullSpecs = 'จอ: 6.7" AMOLED • ชิป: Snapdragon 8 Gen 3 • RAM: 16GB • แบต: 5400mAh • กล้อง: 50MP + 48MP + 64MP';
+          desc = 'OnePlus 12 เน้นความเร็วและการใช้งานที่ลื่นไหล เหมาะกับคนชอบประสิทธิภาพสูง';
+        } else if (title.includes('Nothing Phone 2')) {
+          fullSpecs = 'จอ: 6.7" OLED • ชิป: Snapdragon 8+ Gen 1 • RAM: 12GB • แบต: 4700mAh • กล้อง: 50MP + 50MP';
+          desc = 'Nothing Phone 2 มีดีไซน์แปลกใหม่และฟีเจอร์ที่น่าสนใจสำหรับผู้ชื่นชอบสไตล์เฉพาะตัว';
+        } else if (title.includes('Samsung Galaxy Z Fold6')) {
+          fullSpecs = 'จอ: 7.6" AMOLED • ชิป: Snapdragon 8 Gen 3 • RAM: 12GB • แบต: 4400mAh • กล้อง: 50MP + 12MP + 10MP';
+          desc = 'Samsung Galaxy Z Fold6 เป็นสมาร์ทโฟนพับได้ที่ผสานความทันสมัยและความสะดวกในการใช้งานหลายแบบสำหรับคนชอบเทคโนโลยี';
+        } else if (title.includes('Asus Zenfone 10')) {
+          fullSpecs = 'จอ: 6.0" AMOLED • ชิป: Snapdragon 8 Gen 2 • RAM: 8GB • แบต: 4300mAh • กล้อง: 50MP + 13MP';
+          desc = 'Asus Zenfone 10 ให้ประสิทธิภาพที่คมและใช้งานง่ายสำหรับคนที่ชอบมือถือแบบกะทัดรัด';
+        } else if (title.includes('Realme GT 6')) {
+          fullSpecs = 'จอ: 6.78" AMOLED • ชิป: Snapdragon 8s Gen 3 • RAM: 12GB • แบต: 5500mAh • กล้อง: 50MP + 8MP';
+          desc = 'Realme GT 6 จัดเป็นตัวเลือกที่ประหยัดและแรงสำหรับผู้ใช้ที่ต้องการสมาร์ทโฟนประสิทธิภาพสูง';
+        } else {
+          fullSpecs = 'จอ: 6.0" AMOLED • ชิป: ความเร็วสูง • RAM: 8GB • แบต: 4500mAh';
+          desc = 'รุ่นนี้มาพร้อมกับคุณสมบัติที่ตอบโจทย์การใช้งานในทุกวันและดีไซน์ที่น่าสนใจ';
+        }
+
+        modalTitle.textContent = title;
+        modalPrice.textContent = price;
+        modalSpecs.textContent = fullSpecs;
+        modalDesc.textContent = desc;
+        modalImage.src = image;
+        modalImage.alt = title;
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+      }
+
+      document.querySelectorAll('.detail-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          const card = btn.closest('.product-item');
+          if (card) openModal(card);
+        });
+      });
+
+      closeBtn?.addEventListener('click', closeModal);
+      modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+      });
+    </script>
+  </div>
+</body>
+</html>

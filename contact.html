@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ติดต่อเรา - NexPhone</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .logo span {
+      color: #22c55e;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 30px;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    nav ul li a:hover {
+      color: #22c55e;
+    }
+
+    #userMenu {
+      color: #15803d;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    #logoutButton {
+      margin-left: 8px;
+      padding: 6px 9px;
+      border: 1px solid #22c55e;
+      border-radius: 6px;
+      background: #fff;
+      color: #15803d;
+      cursor: pointer;
+    }
+
+    .page-title {
+      padding: 30px 40px;
+      border-bottom: 2px solid #22c55e;
+    }
+
+    .page-title h1 {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .page-title p {
+      color: #666;
+    }
+
+    .contact-content {
+      padding: 40px;
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .info-item {
+      display: flex;
+      gap: 15px;
+    }
+
+    .info-item .icon {
+      font-size: 32px;
+      width: 50px;
+      display: flex;
+      align-items: center;
+    }
+
+    .info-item .text h3 {
+      margin-bottom: 5px;
+      font-size: 16px;
+    }
+
+    .info-item .text p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .info-item a {
+      color: #22c55e;
+      text-decoration: none;
+    }
+
+    .info-item a:hover {
+      text-decoration: underline;
+    }
+
+    .contact-form {
+      background: #f9f9f9;
+      padding: 30px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #22c55e;
+      box-shadow: 0 0 5px rgba(34, 197, 94, 0.3);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .submit-btn {
+      background: #22c55e;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+      font-size: 14px;
+    }
+
+    .submit-btn:hover {
+      background: #1ba94a;
+    }
+
+    .opening-hours {
+      background: #f0fdf4;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+
+    .opening-hours h4 {
+      margin-bottom: 12px;
+      color: #22c55e;
+    }
+
+    .opening-hours p {
+      font-size: 14px;
+      line-height: 1.8;
+      color: #666;
+    }
+
+    footer {
+      padding: 20px 40px;
+      background: #f3f4f6;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      nav {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 20px;
+      }
+
+      nav ul {
+        gap: 15px;
+      }
+
+      .page-title {
+        padding: 20px;
+      }
+
+      .page-title h1 {
+        font-size: 28px;
+      }
+
+      .contact-content {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 30px;
+      }
+
+      .contact-form {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav>
+      <div class="logo">Nex<span>Phone</span></div>
+      <ul>
+        <li><a href="index.html">หน้าแรก</a></li>
+        <li><a href="products.html">สินค้าทั้งหมด</a></li>
+        <li><a href="contact.html">ติดต่อเรา</a></li>
+        <li id="userMenu" hidden><span id="userName"></span> <button id="logoutButton" type="button">ออกจากระบบ</button></li>
+        <li id="loginLink"><a href="login.html">เข้าสู่ระบบ</a></li>
+      </ul>
+    </nav>
+
+    <div class="page-title">
+      <h1>ติดต่อเรา</h1>
+      <p>เรารอฟังข้อเสนอแนะและคำถามของคุณ</p>
+    </div>
+
+    <div class="contact-content">
+      <div class="contact-info">
+        <div class="info-item">
+          <div class="icon">📍</div>
+          <div class="text">
+            <h3>ที่อยู่ร้าน</h3>
+            <p>NexPhone Official Store ศูนย์การค้าชั้นนำ</p>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="icon">📞</div>
+          <div class="text">
+            <h3>โทรศัพท์</h3>
+            <p><a href="tel:0818578701">081-857-8701</a></p>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="icon">📧</div>
+          <div class="text">
+            <h3>อีเมล</h3>
+            <p><a href="mailto:69319090010@pbntc.ac.th">69319090010@pbntc.ac.th</a></p>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <div class="icon">💬</div>
+          <div class="text">
+            <h3>Line ID</h3>
+            <p><a href="#">Ponlakit</a></p>
+          </div>
+        </div>
+
+        <div class="opening-hours">
+          <h4>🕐 เวลาเปิด-ปิด</h4>
+          <p>จันทร์ - ศุกร์: 09:00 - 18:00 น.</p>
+          <p>เสาร์: 10:00 - 16:00 น.</p>
+          <p>อาทิตย์: ปิด</p>
+        </div>
+      </div>
+
+      <form id="contactForm" class="contact-form">
+        <h3 style="margin-bottom: 10px;">ส่งข้อความมาให้เรา</h3>
+
+        <div class="form-group">
+          <label for="name">ชื่อของคุณ</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">อีเมล</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">เบอร์โทรศัพท์</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+
+        <div class="form-group">
+          <label for="subject">หัวข้อ</label>
+          <input type="text" id="subject" name="subject" required>
+        </div>
+
+        <div class="form-group">
+          <label for="message">ข้อความ</label>
+          <textarea id="message" name="message" required></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn">ส่งข้อความ</button>
+        <p style="font-size: 12px; color: #999; text-align: center;">เราจะตอบกลับภายใน 24 ชั่วโมง</p>
+        <div id="formStatus" style="display:none; margin-top:12px; text-align:center; color:#155724; background:#d4edda; padding:10px; border-radius:6px;">ข้อความถูกบันทึกเรียบร้อย</div>
+      </form>
+    </div>
+
+    <script>
+      (function () {
+        const userMenu = document.getElementById('userMenu');
+        const userName = document.getElementById('userName');
+        const logoutButton = document.getElementById('logoutButton');
+        const loginLink = document.getElementById('loginLink');
+        const contactForm = document.getElementById('contactForm');
+        const formStatus = document.getElementById('formStatus');
+
+        const apiBaseUrl = window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && window.location.port !== '3000')
+          ? 'http://localhost:3000/api'
+          : '/api';
+
+        async function hydrateSession() {
+          const token = localStorage.getItem('nexphone_token') || sessionStorage.getItem('nexphone_token');
+          if (!token) return null;
+
+          const saved = localStorage.getItem('nexphone_user') || sessionStorage.getItem('nexphone_user');
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (parsed?.name) return parsed;
+            } catch {}
+          }
+
+          try {
+            const response = await fetch(`${apiBaseUrl}/me`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!response.ok) return null;
+            const data = await response.json();
+            const user = { name: data.name || data.email?.split('@')[0], email: data.email };
+            localStorage.setItem('nexphone_user', JSON.stringify(user));
+            return user;
+          } catch {
+            return null;
+          }
+        }
+
+        (async function () {
+          const user = await hydrateSession();
+          if (user?.name) {
+            userName.textContent = `สวัสดี, ${user.name}`;
+            userMenu.hidden = false;
+            loginLink.hidden = true;
+          }
+        })();
+
+        logoutButton?.addEventListener('click', function () {
+          localStorage.removeItem('nexphone_token');
+          localStorage.removeItem('nexphone_user');
+          sessionStorage.removeItem('nexphone_token');
+          sessionStorage.removeItem('nexphone_user');
+          window.location.href = 'login.html';
+        });
+
+        contactForm?.addEventListener('submit', function (e) {
+          e.preventDefault();
+          formStatus.style.display = 'block';
+          contactForm.reset();
+          setTimeout(() => {
+            formStatus.style.display = 'none';
+          }, 4000);
+        });
+      })();
+    </script>
+
+    <footer>
+      © 2026 NexPhone. ศูนย์รวมสมาร์ทโฟนชั้นนำ
+    </footer>
+  </div>
+</body>
+</html>

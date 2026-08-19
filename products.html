@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สินค้าทั้งหมด - NexPhone</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        background: #f5f5f5;
+        color: #222;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 40px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .logo {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .logo span {
+        color: #22c55e;
+    }
+
+    nav ul {
+        display: flex;
+        list-style: none;
+        gap: 30px;
+    }
+
+    nav ul li a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+    nav ul li a:hover {
+        color: #22c55e;
+    }
+
+    #userMenu {
+        color: #15803d;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    #logoutButton {
+        margin-left: 8px;
+        padding: 6px 9px;
+        border: 1px solid #22c55e;
+        border-radius: 6px;
+        background: #fff;
+        color: #15803d;
+        cursor: pointer;
+    }
+
+    .page-title {
+        padding: 30px 40px;
+        border-bottom: 2px solid #22c55e;
+    }
+
+    .page-title h1 {
+        font-size: 36px;
+        margin-bottom: 8px;
+    }
+
+    .page-title p {
+        color: #666;
+    }
+
+    .products {
+        padding: 40px;
+        flex: 1;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+
+    .product-item {
+        background: #f9f9f9;
+        border: 1px solid #e0e0e0;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .product-item:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+
+    .product-item img {
+        width: 100%;
+        height: 220px;
+        object-fit: contain;
+        background: #fff;
+        border-radius: 6px;
+        margin-bottom: 12px;
+    }
+
+    .product-item h3 {
+        font-size: 15px;
+        margin: 10px 0 8px;
+        font-weight: 600;
+    }
+
+    .product-item .price {
+        font-size: 16px;
+        color: #22c55e;
+        font-weight: bold;
+        margin: 8px 0;
+    }
+
+    .product-item .specs {
+        font-size: 12px;
+        color: #999;
+        margin: 8px 0;
+    }
+
+    .product-item .btn {
+        display: inline-block;
+        background: #22c55e;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 12px;
+        margin-top: 10px;
+        transition: background 0.3s;
+    }
+
+    .product-item .btn:hover {
+        background: #1ba94a;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 1000;
+    }
+
+    .modal.show {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        width: 100%;
+        max-width: 480px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    }
+
+    .modal-image {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .modal-body h3 {
+        margin-bottom: 8px;
+    }
+
+    .modal-price {
+        color: #22c55e;
+        font-weight: bold;
+        margin: 8px 0;
+    }
+
+    .modal-specs {
+        color: #666;
+        margin-bottom: 10px;
+    }
+
+    .close-btn {
+        float: right;
+        border: none;
+        background: transparent;
+        font-size: 22px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .order-btn { width: 100%; margin-top: 16px; border: 0; border-radius: 8px; padding: 12px; background: #22c55e; color: #fff; font-weight: 700; cursor: pointer; }
+    .order-btn:hover { background: #16a34a; }
+
+    .cart-strip {
+        display: flex;
+        justify-content: flex-end;
+        padding: 0 40px 10px;
+    }
+
+    .cart-toggle {
+        border: 1px solid #22c55e;
+        border-radius: 999px;
+        background: #fff;
+        color: #15803d;
+        font-weight: 700;
+        padding: 10px 16px;
+        cursor: pointer;
+    }
+
+    .cart-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #22c55e;
+        color: #fff;
+        margin-left: 8px;
+        font-size: 12px;
+    }
+
+    .cart-sidebar {
+        position: fixed;
+        top: 0;
+        right: -420px;
+        width: 380px;
+        max-width: 100%;
+        height: 100vh;
+        background: #fff;
+        box-shadow: -4px 0 18px rgba(0,0,0,0.12);
+        padding: 22px;
+        transition: right 0.25s ease;
+        z-index: 1001;
+    }
+
+    .cart-sidebar.show {
+        right: 0;
+    }
+
+    .cart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .cart-title {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .cart-close {
+        background: transparent;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    .cart-item {
+        display: grid;
+        grid-template-columns: 72px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .cart-item img {
+        width: 72px;
+        height: 72px;
+        object-fit: contain;
+        background: #f7f7f7;
+        border-radius: 8px;
+    }
+
+    .cart-item-name {
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .cart-item-price {
+        font-size: 13px;
+        color: #22c55e;
+        margin-top: 4px;
+    }
+
+    .cart-item-remove {
+        border: 0;
+        background: #ef4444;
+        color: #fff;
+        border-radius: 6px;
+        padding: 6px 8px;
+        cursor: pointer;
+    }
+
+    .cart-total {
+        margin-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+    }
+
+    .cart-actions {
+        margin-top: 18px;
+        display: grid;
+        gap: 10px;
+    }
+
+    .checkout-btn {
+        width: 100%;
+        border: 0;
+        border-radius: 8px;
+        padding: 12px;
+        background: #15803d;
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .checkout-btn:hover { background: #166534; }
+
+    .muted {
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    body.modal-open {
+        overflow: hidden;
+    }
+
+    footer {
+        padding: 20px 40px;
+        background: #f3f4f6;
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+        nav {
+            flex-direction: column;
+            gap: 15px;
+            padding: 15px 20px;
+        }
+
+        nav ul {
+            gap: 15px;
+        }
+
+        .page-title {
+            padding: 20px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+        }
+
+        .products {
+            padding: 20px;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <div class="logo">Nex<span>Phone</span></div>
+            <ul>
+                <li><a href="index.html">หน้าแรก</a></li>
+                <li><a href="products.html">สินค้าทั้งหมด</a></li>
+                <li><a href="contact.html">ติดต่อเรา</a></li>
+                <li id="userMenu" hidden><span id="userName"></span> <button id="logoutButton" type="button">ออกจากระบบ</button></li>
+                <li id="loginLink"><a href="login.html">เข้าสู่ระบบ</a></li>
+            </ul>
+        </nav>
+
+        <div class="page-title">
+            <h1>สินค้าทั้งหมด</h1>
+            <p>เลือกสมาร์ทโฟนที่เหมาะกับคุณจากคลังสินค้าครบครัน</p>
+        </div>
+
+        <div class="cart-strip">
+            <button id="openCartButton" class="cart-toggle" type="button">ตะกร้าสินค้า <span id="cartCount" class="cart-count">0</span></button>
+        </div>
+
+        <section class="products">
+            <div class="products-grid" id="productsGrid"></div>
+        </section>
+
+        <div class="modal" id="detailModal">
+            <div class="modal-content">
+                <img class="modal-image" id="modalImage" src="" alt="">
+                <div class="modal-body">
+                    <button class="close-btn" type="button" aria-label="ปิด">×</button>
+                    <h3 id="modalTitle"></h3>
+                    <p class="modal-price" id="modalPrice"></p>
+                    <p class="modal-specs" id="modalSpecs"></p>
+                    <p id="modalDesc"></p>
+                    <button id="addToCartButton" class="order-btn" type="button">เพิ่มลงตะกร้า</button>
+                </div>
+            </div>
+        </div>
+
+        <aside class="cart-sidebar" id="cartSidebar">
+            <div class="cart-header">
+                <div class="cart-title">ตะกร้าสินค้า</div>
+                <button class="cart-close" id="cartCloseButton" type="button" aria-label="ปิดตะกร้า">×</button>
+            </div>
+            <div id="cartItems"></div>
+            <div class="cart-total">
+                <span>รวม</span>
+                <span id="cartTotal">฿0</span>
+            </div>
+            <div class="cart-actions">
+                <button id="checkoutButton" class="checkout-btn" type="button">ยืนยันการซื้อ</button>
+            </div>
+        </aside>
+
+        <script>
+            const modal = document.getElementById('detailModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalPrice = document.getElementById('modalPrice');
+            const modalSpecs = document.getElementById('modalSpecs');
+            const modalDesc = document.getElementById('modalDesc');
+            const modalImage = document.getElementById('modalImage');
+            const closeBtn = document.querySelector('.close-btn');
+            const addToCartButton = document.getElementById('addToCartButton');
+            const cartSidebar = document.getElementById('cartSidebar');
+            const openCartButton = document.getElementById('openCartButton');
+            const cartCloseButton = document.getElementById('cartCloseButton');
+            const cartItems = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cartCount');
+            const cartTotal = document.getElementById('cartTotal');
+            const checkoutButton = document.getElementById('checkoutButton');
+            const productsGrid = document.getElementById('productsGrid');
+            const apiBaseUrl = window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && window.location.port !== '3000')
+              ? 'http://localhost:3000/api'
+              : '/api';
+
+            const fallbackProducts = [
+                { title: 'iPhone 14 Pro Max', description: 'สมาร์ทโฟนระดับโปร', price: 49999, image: 'images/iphone-14-pro-max.jpg' },
+                { title: 'iPhone 14 Pro', description: 'สมาร์ทโฟนระดับโปร', price: 44999, image: 'images/iphone-14-pro.jpg' },
+                { title: 'Samsung S24 Ultra', description: 'เรือธงจาก Samsung', price: 47999, image: 'images/samsung-s24-ultra.png' },
+                { title: 'Samsung Galaxy S24', description: 'สมาร์ทโฟนรุ่นยอดนิยม', price: 42999, image: 'images/samsung-galaxy-s24.png' },
+                { title: 'Google Pixel 8 Pro', description: 'กล้อง AI ระดับพรีเมียม', price: 44999, image: 'images/pixel-8-pro.jpg' },
+                { title: 'Google Pixel 8', description: 'ใช้งานง่ายและถ่ายภาพสวย', price: 35999, image: 'images/pixel-8.jpg' },
+                { title: 'Xiaomi 14 Ultra', description: 'กล้องและประสิทธิภาพแรง', price: 38999, image: 'images/xiaomi-14-ultra.jpg' },
+                { title: 'Xiaomi 14', description: 'ประสิทธิภาพสูง ราคาดี', price: 28999, image: 'images/xiaomi-14.jpg' },
+                { title: 'OnePlus 12', description: 'เน้นความเร็วและอุณหภูมิ', price: 32999, image: 'images/oneplus-12.jpg' },
+                { title: 'Nothing Phone 2', description: 'ดีไซน์โดดเด่นและล้ำ', price: 25999, image: 'images/nothing-phone-2.png' },
+                { title: 'OPPO Find X7', description: 'โฟกัสกล้องและสไตล์', price: 30999, image: 'images/oppo-find-x7.jpg' },
+                { title: 'Vivo X100', description: 'กล้องคมชัดและเร็ว', price: 31999, image: 'images/vivo-x100.jpg' },
+                { title: 'Samsung Galaxy Z Fold6', description: 'สมาร์ทโฟนพับได้สุดล้ำ', price: 59999, image: 'images/มือถือใหม่-removebg-preview.png' },
+                { title: 'Asus Zenfone 10', description: 'มือถือขนาดกะทัดรัดและแรง', price: 26999, image: 'images/29598.jpg' },
+                { title: 'Realme GT 6', description: 'ประสิทธิภาพแรงในราคาย่อมเยา', price: 24999, image: 'images/29598.jpg' }
+            ];
+
+            function closeModal() {
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+            }
+
+            function renderProducts(products) {
+                if (!products.length) {
+                    productsGrid.innerHTML = '<div class="muted">ไม่พบสินค้าในระบบ</div>';
+                    return;
+                }
+
+                productsGrid.innerHTML = products.map((product) => {
+                    const title = product.title || 'สินค้า';
+                    const price = Number(product.price || 0);
+                    const image = product.image || '';
+                    const description = product.description || 'สินค้าที่น่าสนใจ';
+                    return `
+                        <div class="product-item"
+                             data-title="${escapeHtml(title)}"
+                             data-price="${price}"
+                             data-image="${escapeHtml(image)}"
+                             data-description="${escapeHtml(description)}"
+                             data-specs="${escapeHtml(description)}">
+                            <img src="${escapeHtml(image)}" alt="${escapeHtml(title)}">
+                            <h3>${escapeHtml(title)}</h3>
+                            <p class="specs">${escapeHtml(description)}</p>
+                            <p class="price">฿${price.toLocaleString('th-TH')}</p>
+                            <a href="#" class="btn detail-btn">ดูรายละเอียด</a>
+                        </div>
+                    `;
+                }).join('');
+
+                productsGrid.querySelectorAll('.detail-btn').forEach((btn) => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const card = btn.closest('.product-item');
+                        if (card) openModal(card);
+                    });
+                });
+            }
+
+            async function loadProducts() {
+                try {
+                    const response = await fetch(`${apiBaseUrl}/products`);
+                    if (!response.ok) throw new Error('Failed');
+                    const products = await response.json();
+                    renderProducts(products);
+                } catch {
+                    renderProducts(fallbackProducts);
+                }
+            }
+
+            function openModal(card) {
+                const title = card.dataset.title || card.querySelector('h3')?.textContent?.trim() || 'สินค้าของเรา';
+                const price = Number(card.dataset.price || card.querySelector('.price')?.textContent?.trim().replace(/[^\d]/g, '') || 0);
+                const specs = card.dataset.specs || card.querySelector('.specs')?.textContent?.trim() || '';
+                const image = card.dataset.image || card.querySelector('img')?.src || '';
+                const description = card.dataset.description || 'รุ่นนี้มาพร้อมกับคุณสมบัติที่ตอบโจทย์การใช้งานในทุกวันและดีไซน์ที่น่าสนใจ';
+
+                modalTitle.textContent = title;
+                modalPrice.textContent = `฿${price.toLocaleString('th-TH')}`;
+                modalSpecs.textContent = specs;
+                modalDesc.textContent = description;
+                modalImage.src = image;
+                modalImage.alt = title;
+                modal.classList.add('show');
+                document.body.classList.add('modal-open');
+            }
+
+            loadProducts();
+
+            function getCart() {
+                try {
+                    return JSON.parse(localStorage.getItem('nexphone_cart') || '[]');
+                } catch {
+                    return [];
+                }
+            }
+
+            function saveCart(cart) {
+                localStorage.setItem('nexphone_cart', JSON.stringify(cart));
+            }
+
+            function renderCart() {
+                const cart = getCart();
+                const total = cart.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+                cartCount.textContent = String(cart.length);
+                cartTotal.textContent = `฿${total.toLocaleString('th-TH')}`;
+
+                if (!cart.length) {
+                    cartItems.innerHTML = '<div class="muted">ยังไม่มีสินค้าในตะกร้า</div>';
+                    return;
+                }
+
+                cartItems.innerHTML = cart.map((item, index) => `
+                    <div class="cart-item">
+                        <img src="${item.image || ''}" alt="${item.product || ''}">
+                        <div>
+                            <div class="cart-item-name">${item.product || '-'}</div>
+                            <div class="cart-item-price">฿${Number(item.price || 0).toLocaleString('th-TH')}</div>
+                        </div>
+                        <button class="cart-item-remove" type="button" data-index="${index}">เอาออก</button>
+                    </div>
+                `).join('');
+
+                cartItems.querySelectorAll('.cart-item-remove').forEach((button) => {
+                    button.addEventListener('click', () => {
+                        const cart = getCart();
+                        const idx = Number(button.dataset.index);
+                        cart.splice(idx, 1);
+                        saveCart(cart);
+                        renderCart();
+                    });
+                });
+            }
+
+            function toggleCart() {
+                cartSidebar.classList.toggle('show');
+            }
+
+            renderCart();
+
+            closeBtn?.addEventListener('click', closeModal);
+            openCartButton?.addEventListener('click', toggleCart);
+            cartCloseButton?.addEventListener('click', toggleCart);
+            cartSidebar?.addEventListener('click', (e) => {
+                if (e.target === cartSidebar) {
+                    cartSidebar.classList.remove('show');
+                }
+            });
+
+            addToCartButton?.addEventListener('click', () => {
+                const cart = getCart();
+                const product = {
+                    product: modalTitle.textContent,
+                    price: Number(String(modalPrice.textContent).replace(/[^\d]/g, '')) || 0,
+                    image: modalImage.src
+                };
+                cart.push(product);
+                saveCart(cart);
+                renderCart();
+                closeModal();
+                toggleCart();
+            });
+
+            checkoutButton?.addEventListener('click', async () => {
+                const cart = getCart();
+                if (!cart.length) {
+                    alert('ยังไม่มีสินค้าในตะกร้า');
+                    return;
+                }
+
+                const token = localStorage.getItem('nexphone_token');
+                if (!token) {
+                    alert('กรุณาเข้าสู่ระบบก่อนจึงจะสามารถสั่งซื้อได้');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const savedUser = (() => {
+                    try {
+                        return JSON.parse(localStorage.getItem('nexphone_user') || 'null');
+                    } catch {
+                        return null;
+                    }
+                })();
+
+                const summary = [];
+                for (const item of cart) {
+                    try {
+                        const response = await fetch(`${apiBaseUrl}/orders`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                            body: JSON.stringify({
+                                product: item.product,
+                                price: item.price,
+                                quantity: 1,
+                                customerName: savedUser?.name || 'Guest',
+                                customerEmail: savedUser?.email || '',
+                                image: item.image
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Failed');
+                        }
+
+                        const result = await response.json();
+                        summary.push(result.orderCode);
+                    } catch {
+                        summary.push('error');
+                    }
+                }
+
+                localStorage.removeItem('nexphone_cart');
+                renderCart();
+                cartSidebar.classList.remove('show');
+                alert(summary.includes('error') ? 'เกิดข้อผิดพลาดในการบันทึกคำสั่งซื้อ กรุณาลองใหม่อีกครั้ง' : `บันทึกการซื้อสำเร็จ\n${summary.length} รายการ`);
+            });
+
+            modal?.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+        </script>
+        <script>
+            const userMenu = document.getElementById('userMenu');
+            const userName = document.getElementById('userName');
+            const logoutButton = document.getElementById('logoutButton');
+            const loginLink = document.getElementById('loginLink');
+
+            async function hydrateSession() {
+                const token = localStorage.getItem('nexphone_token');
+                if (!token) return null;
+
+                try {
+                    const savedUser = JSON.parse(localStorage.getItem('nexphone_user') || 'null');
+                    if (savedUser?.name) return savedUser;
+                } catch {}
+
+                try {
+                    const response = await fetch(`${apiBaseUrl}/me`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (!response.ok) return null;
+                    const data = await response.json();
+                    const user = { name: data.name || data.email?.split('@')[0], email: data.email };
+                    localStorage.setItem('nexphone_user', JSON.stringify(user));
+                    return user;
+                } catch {
+                    return null;
+                }
+            }
+
+            (async () => {
+                const user = await hydrateSession();
+                if (user?.name) {
+                    userName.textContent = `สวัสดี, ${user.name}`;
+                    userMenu.hidden = false;
+                    loginLink.hidden = true;
+                }
+            })();
+
+            logoutButton?.addEventListener('click', () => {
+                localStorage.removeItem('nexphone_token');
+                localStorage.removeItem('nexphone_user');
+                window.location.href = 'login.html';
+            });
+        </script>
+        <footer>
+            © 2026 NexPhone. ศูนย์รวมสมาร์ทโฟนชั้นนำ
+        </footer>
+    </div>
+</body>
+</html>

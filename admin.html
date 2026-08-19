@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard - NexPhone</title>
+  <style>
+    :root {
+      --green: #16a34a;
+      --green-dark: #15803d;
+      --green-soft: #ecfdf5;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --bg: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      padding: 24px;
+    }
+    .wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 22px;
+      padding: 20px 24px;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(255,255,255,0.75);
+      backdrop-filter: blur(10px);
+      border-radius: 18px;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+    }
+    .header-actions { display:flex; gap:10px; align-items:center; }
+    .home-link, .ghost-btn {
+      display:inline-block;
+      padding:10px 14px;
+      border-radius:10px;
+      text-decoration:none;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .home-link { background:var(--green-dark); color:#fff; }
+    .ghost-btn { background:#fff; color:var(--green-dark); border:1px solid #bbf7d0; }
+    .hero {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:16px;
+      margin-bottom:24px;
+    }
+    .card {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+    .kpi {
+      font-size:30px;
+      font-weight:800;
+      color: var(--green-dark);
+      margin-top:8px;
+    }
+    .muted { color: var(--muted); font-size: 13px; }
+    .panel-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .subtle {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .stack { display:grid; gap:18px; }
+    table {
+      width:100%;
+      border-collapse: collapse;
+      background:#fff;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 12px 13px;
+      border-bottom: 1px solid #eef2f7;
+      text-align:left;
+      font-size: 14px;
+    }
+    th {
+      background: #f8fafc;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    tr:hover td { background: #f9fbff; }
+    button {
+      padding: 7px 11px;
+      border:none;
+      border-radius: 8px;
+      background: var(--green);
+      color:#fff;
+      cursor:pointer;
+      margin-right:6px;
+      font-weight:700;
+    }
+    button:hover { background: var(--green-dark); }
+    .danger { background:#dc2626; }
+    .danger:hover { background:#b91c1c; }
+    .secondary { background:#4b5563; }
+    .secondary:hover { background:#374151; }
+    .badge {
+      display:inline-flex;
+      align-items:center;
+      padding:6px 9px;
+      background: var(--green-soft);
+      color: var(--green-dark);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight:700;
+    }
+    .add-form {
+      display: grid;
+      grid-template-columns: 2fr 1fr 2fr auto;
+      gap: 10px;
+      margin-bottom: 16px;
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 12px;
+      align-items: center;
+    }
+    .add-form input {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .action-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <div class="badge">NexPhone Admin</div>
+        <h2 style="margin:10px 0 4px;">Admin Dashboard</h2>
+        <div class="subtle">ระบบจัดการสมาชิกและรายการสั่งซื้อ</div>
+      </div>
+      <div class="header-actions">
+        <a class="home-link" href="index.html">← กลับหน้าหลัก</a>
+        <button class="ghost-btn" type="button" onclick="logoutAdmin()">ออกจากระบบ</button>
+      </div>
+    </div>
+
+    <div class="hero" id="kpiGrid"></div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="panel-title">สถิติการสั่งซื้อแยกตามรุ่น</div>
+        <table>
+          <thead>
+            <tr><th>สินค้า</th><th>จำนวนคำสั่งซื้อ</th><th>จำนวนชิ้น</th><th>รายได้</th></tr>
+          </thead>
+          <tbody id="statsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="panel-title">รายชื่อผู้ล็อกอิน</div>
+        <p class="subtle">ต้องล็อกอินเป็นแอดมินก่อน (ใช้หน้า login)</p>
+        <table id="tbl">
+          <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>ล็อกอินล่าสุด</th><th>รหัสผ่านใหม่</th><th>Action</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="action-bar">
+          <div>
+            <div class="panel-title" style="margin:0;">จัดการสินค้า (15 รุ่น)</div>
+            <p class="subtle" style="margin:4px 0 0;">แก้ไขราคา อัปโหลดรูปภาพใหม่ หรือเพิ่ม/ลบสินค้าได้ทุกรุ่นที่นี่</p>
+          </div>
+          <div>
+            <button type="button" class="secondary" onclick="resetDefaultProducts()">🔄 ดึงสินค้า 15 รุ่นใหม่ทั้งหมด</button>
+            <button type="button" class="danger" onclick="clearAllProducts()">🗑️ ลบสินค้าทั้งหมด</button>
+          </div>
+        </div>
+
+        <!-- ฟอร์มเพิ่มสินค้าใหม่ -->
+        <div class="add-form">
+          <input id="new-title" type="text" placeholder="ชื่อรุ่นมือถือใหม่..." />
+          <input id="new-price" type="number" min="0" placeholder="ราคา (บาท)..." />
+          <input id="new-image" type="text" placeholder="URL รูปภาพ (หรืออัปโหลดด้านล่าง)..." />
+          <button type="button" onclick="addProduct()">+ เพิ่มสินค้า</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr><th>ชื่อสินค้า</th><th>ราคา</th><th>รูปภาพ (URL หรือ เลือกไฟล์เพื่ออัปโหลด)</th><th>จัดการ</th></tr>
+          </thead>
+          <tbody id="productsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="panel-title">รายการสั่งซื้อล่าสุด</div>
+        <table>
+          <thead>
+            <tr><th>Order</th><th>สินค้า</th><th>จำนวน</th><th>ราคา</th><th>เวลา</th></tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const apiBaseUrl = window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && window.location.port !== '3000')
+      ? 'http://localhost:3000/api'
+      : '/api';
+
+    // รายการสินค้าครบถ้วนทั้ง 15 รุ่นจากภาพถ่าย
+    const FULL_DEFAULT_PRODUCTS = [
+      { id: 1, title: 'iPhone 14 Pro Max', price: 49999, image: 'https://via.placeholder.com/150' },
+      { id: 2, title: 'iPhone 14 Pro', price: 44999, image: 'https://via.placeholder.com/150' },
+      { id: 3, title: 'Samsung S24 Ultra', price: 47999, image: 'https://via.placeholder.com/150' },
+      { id: 4, title: 'Samsung Galaxy S24', price: 42999, image: 'https://via.placeholder.com/150' },
+      { id: 5, title: 'Google Pixel 8 Pro', price: 44999, image: 'https://via.placeholder.com/150' },
+      { id: 6, title: 'Google Pixel 8', price: 35999, image: 'https://via.placeholder.com/150' },
+      { id: 7, title: 'Xiaomi 14 Ultra', price: 38999, image: 'https://via.placeholder.com/150' },
+      { id: 8, title: 'Xiaomi 14', price: 28999, image: 'https://via.placeholder.com/150' },
+      { id: 9, title: 'OnePlus 12', price: 32999, image: 'https://via.placeholder.com/150' },
+      { id: 10, title: 'Nothing Phone 2', price: 25999, image: 'https://via.placeholder.com/150' },
+      { id: 11, title: 'OPPO Find X7', price: 29999, image: 'https://via.placeholder.com/150' },
+      { id: 12, title: 'Vivo X100', price: 27999, image: 'https://via.placeholder.com/150' },
+      { id: 13, title: 'Samsung Galaxy Z Fold6', price: 59999, image: 'https://via.placeholder.com/150' },
+      { id: 14, title: 'Asus Zenfone 10', price: 26999, image: 'https://via.placeholder.com/150' },
+      { id: 15, title: 'Realme GT 6', price: 24999, image: 'https://via.placeholder.com/150' }
+    ];
+
+    const MOCK_DATA = {
+      users: [
+        { id: 1, name: 'Administrator', email: 'admin@nexphone.com' },
+        { id: 2, name: 'Somchai User', email: 'somchai@gmail.com' }
+      ],
+      orders: [
+        { order_code: 'ORD-1001', product_title: 'iPhone 14 Pro Max', quantity: 1, price: 49999, created_at: new Date().toISOString() },
+        { order_code: 'ORD-1002', product_title: 'Samsung S24 Ultra', quantity: 2, price: 47999, created_at: new Date().toISOString() }
+      ],
+      stats: [
+        { product: 'iPhone 14 Pro Max', order_count: 1, total_units: 1, revenue: 49999 },
+        { product: 'Samsung S24 Ultra', order_count: 1, total_units: 2, revenue: 95998 }
+      ]
+    };
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('nexphone_token');
+      sessionStorage.removeItem('nexphone_user');
+      localStorage.removeItem('nexphone_token');
+      localStorage.removeItem('nexphone_user');
+      window.location.href = 'login.html';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    }
+
+    async function safeFetchJSON(url, options = {}) {
+      try {
+        const res = await fetch(url, options);
+        const contentType = res.headers.get('content-type');
+        if (res.ok && contentType && contentType.includes('application/json')) {
+          return await res.json();
+        }
+      } catch (err) {
+        console.warn('API call failed:', url);
+      }
+      return null;
+    }
+
+    function getProducts() {
+      const stored = localStorage.getItem('admin_mock_products');
+      // หากข้อมูลใน localStorage มีน้อยกว่า 15 รุ่น ให้เขียนทับด้วยข้อมูล 15 รุ่นทันที
+      if (!stored || JSON.parse(stored).length < 15) {
+        localStorage.setItem('admin_mock_products', JSON.stringify(FULL_DEFAULT_PRODUCTS));
+        return FULL_DEFAULT_PRODUCTS;
+      }
+      return JSON.parse(stored);
+    }
+
+    function resetDefaultProducts() {
+      if (confirm('คุณต้องการล้างแคชเดิม แล้วดึงรายการสินค้าทั้ง 15 รุ่นกลับมาใช่หรือไม่?')) {
+        localStorage.setItem('admin_mock_products', JSON.stringify(FULL_DEFAULT_PRODUCTS));
+        load();
+      }
+    }
+
+    function clearAllProducts() {
+      if (confirm('คุณต้องการลบรายการสินค้าทั้งหมดออกใช่หรือไม่?')) {
+        localStorage.setItem('admin_mock_products', JSON.stringify([]));
+        load();
+      }
+    }
+
+    async function load() {
+      const token = sessionStorage.getItem('nexphone_token') || localStorage.getItem('nexphone_token');
+      const userStr = sessionStorage.getItem('nexphone_user') || localStorage.getItem('nexphone_user');
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      if (!token) {
+        alert('กรุณาเข้าสู่ระบบเป็นแอดมินก่อน');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      let rows, stats, orders, products;
+
+      if (token === 'local-admin-token' || (user && user.role === 'admin')) {
+        rows = JSON.parse(localStorage.getItem('admin_mock_users')) || MOCK_DATA.users;
+        products = getProducts();
+        orders = MOCK_DATA.orders;
+        stats = MOCK_DATA.stats;
+      } else {
+        const me = await safeFetchJSON(`${apiBaseUrl}/me`, { headers: { Authorization: 'Bearer ' + token } });
+        if (!me || me.role !== 'admin') {
+          alert('เซสชันหมดอายุหรือไม่มีสิทธิ์แอดมิน');
+          window.location.href = 'login.html';
+          return;
+        }
+
+        const authHeader = { headers: { Authorization: 'Bearer ' + token } };
+        rows = await safeFetchJSON(`${apiBaseUrl}/logins`, authHeader) || MOCK_DATA.users;
+        stats = await safeFetchJSON(`${apiBaseUrl}/orders/stats`, authHeader) || MOCK_DATA.stats;
+        orders = await safeFetchJSON(`${apiBaseUrl}/orders`, authHeader) || MOCK_DATA.orders;
+        products = await safeFetchJSON(`${apiBaseUrl}/products`) || getProducts();
+      }
+
+      renderKpis(rows, stats, orders);
+      renderStats(stats);
+      renderOrders(orders);
+      renderProducts(products);
+      renderAccounts(rows);
+    }
+
+    function renderKpis(rows, stats, orders) {
+      const totalRevenue = orders.reduce((sum, order) => sum + (Number(order.price) * Number(order.quantity || 1)), 0);
+      const productCount = new Set(orders.map(o => o.product_title)).size;
+      const kpis = [
+        { title: 'ผู้ใช้ทั้งหมด', value: rows.length },
+        { title: 'คำสั่งซื้อทั้งหมด', value: orders.length },
+        { title: 'รุ่นที่มีคนสั่ง', value: productCount },
+        { title: 'รายได้รวม', value: `฿${totalRevenue.toLocaleString('th-TH')}` }
+      ];
+
+      const kpiGrid = document.getElementById('kpiGrid');
+      kpiGrid.innerHTML = kpis.map(item => `
+        <div class="card">
+          <div class="muted">${escapeHtml(item.title)}</div>
+          <div class="kpi">${escapeHtml(item.value)}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderStats(stats) {
+      const tbody = document.getElementById('statsBody');
+      tbody.innerHTML = stats.map(s => `
+        <tr>
+          <td>${escapeHtml(s.product || '-')}</td>
+          <td>${escapeHtml(s.order_count || 0)}</td>
+          <td>${escapeHtml(s.total_units || 0)}</td>
+          <td>฿${Number(s.revenue || 0).toLocaleString('th-TH')}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderOrders(orders) {
+      const tbody = document.getElementById('ordersBody');
+      tbody.innerHTML = orders.slice(0, 8).map(order => `
+        <tr>
+          <td>${escapeHtml(order.order_code)}</td>
+          <td>${escapeHtml(order.product_title)}</td>
+          <td>${escapeHtml(order.quantity)}</td>
+          <td>฿${Number(order.price).toLocaleString('th-TH')}</td>
+          <td>${new Date(order.created_at).toLocaleString('th-TH')}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderProducts(products) {
+      const tbody = document.getElementById('productsBody');
+      if (products.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#6b7280;padding:24px;">ไม่มีสินค้าในระบบ สามารถกดปุ่ม "+ เพิ่มสินค้า" หรือ "🔄 ดึงสินค้า 15 รุ่นใหม่ทั้งหมด" ได้ด้านบน</td></tr>';
+        return;
+      }
+      tbody.innerHTML = products.map((product) => `
+        <tr>
+          <td><strong>${escapeHtml(product.title || '-')}</strong></td>
+          <td><input id="price-${product.id}" type="number" min="0" value="${Number(product.price || 0)}" style="width:100%;padding:7px;border:1px solid #d1d5db;border-radius:8px;"></td>
+          <td>
+            <input id="image-${product.id}" type="text" value="${escapeHtml(product.image || '')}" style="width:100%;padding:7px;border:1px solid #d1d5db;border-radius:8px;" placeholder="URL รูปภาพ" />
+            <input id="file-${product.id}" type="file" accept="image/*" style="margin-top:6px;width:100%;" />
+          </td>
+          <td>
+            <button type="button" onclick="saveProduct(${product.id})">บันทึก</button>
+            <button type="button" onclick="uploadImage(${product.id})">อัปโหลด</button>
+            <button type="button" class="danger" onclick="deleteProduct(${product.id})">ลบ</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function addProduct() {
+      const titleInput = document.getElementById('new-title');
+      const priceInput = document.getElementById('new-price');
+      const imageInput = document.getElementById('new-image');
+
+      const title = titleInput.value.trim();
+      const price = Number(priceInput.value);
+      const image = imageInput.value.trim() || 'https://via.placeholder.com/150';
+
+      if (!title) {
+        alert('กรุณากรอกชื่อรุ่นมือถือ');
+        return;
+      }
+      if (!price || price <= 0) {
+        alert('กรุณากรอกราคาที่ถูกต้อง');
+        return;
+      }
+
+      let products = getProducts();
+      const newProduct = {
+        id: Date.now(),
+        title: title,
+        price: price,
+        image: image
+      };
+
+      products.push(newProduct);
+      localStorage.setItem('admin_mock_products', JSON.stringify(products));
+
+      titleInput.value = '';
+      priceInput.value = '';
+      imageInput.value = '';
+
+      alert('เพิ่มสินค้ามือถือรุ่นใหม่เรียบร้อยแล้ว');
+      load();
+    }
+
+    function deleteProduct(id) {
+      if (!confirm('คุณต้องการลบสินค้านี้ใช่หรือไม่?')) return;
+
+      let products = getProducts();
+      products = products.filter(p => p.id !== id);
+      localStorage.setItem('admin_mock_products', JSON.stringify(products));
+
+      alert('ลบสินค้าเรียบร้อยแล้ว');
+      load();
+    }
+
+    async function saveProduct(id, { silent = false } = {}) {
+      const priceInput = document.getElementById(`price-${id}`);
+      const imageInput = document.getElementById(`image-${id}`);
+      const price = Number(priceInput?.value || 0);
+
+      if (!Number.isFinite(price) || price < 0) {
+        alert('ราคาต้องเป็นตัวเลขที่ถูกต้อง');
+        return false;
+      }
+
+      let products = getProducts();
+      products = products.map(p => p.id === id ? { ...p, price, image: imageInput?.value?.trim() || '' } : p);
+      
+      try {
+        localStorage.setItem('admin_mock_products', JSON.stringify(products));
+      } catch (e) {
+        alert('หน่วยความจำเต็ม ไม่สามารถบันทึกได้ กรุณาย่อขนาดภาพลงเพิ่มเติม');
+        return false;
+      }
+
+      if (!silent) alert('บันทึกข้อมูลสินค้าเรียบร้อย');
+      load();
+      return true;
+    }
+
+    // ฟังก์ชันอัปโหลดรูปภาพพร้อมย่อขนาดภาพอัตโนมัติ (ไม่ทำให้พื้นที่เต็ม)
+    async function uploadImage(id) {
+      const fileInput = document.getElementById(`file-${id}`);
+      const imageInput = document.getElementById(`image-${id}`);
+      const file = fileInput?.files?.[0];
+
+      if (!file) return alert('กรุณาเลือกไฟล์รูปภาพก่อน');
+      if (!file.type.startsWith('image/')) return alert('รองรับเฉพาะไฟล์ภาพเท่านั้น');
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = async () => {
+          // ย่อขนาดรูปภาพให้กว้างไม่เกิน 350px เพื่อความรวดเร็วและประหยัดพื้นที่
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 350; 
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          // แปลงเป็น JPG ที่ความคมชัด 70%
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+          imageInput.value = compressedDataUrl;
+          const saved = await saveProduct(id, { silent: true });
+          if (saved) alert('อัปโหลดและบันทึกรูปภาพเรียบร้อยแล้ว!');
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderAccounts(rows) {
+      const tb = document.querySelector('#tbl tbody');
+      tb.innerHTML = '';
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(r.id)}</td>
+          <td>${escapeHtml(r.name)}</td>
+          <td>${escapeHtml(r.email)}</td>
+          <td>${r.last_login_at ? new Date(r.last_login_at).toLocaleString('th-TH') : 'ยังไม่เคยล็อกอิน'}</td>
+          <td><input id="pw-${r.id}" type="password" placeholder="รหัสผ่านใหม่" style="width:100%;padding:7px;border:1px solid #d1d5db;border-radius:8px;"></td>
+          <td>
+            <button type="button" onclick="changePassword(${r.id})">เปลี่ยนรหัส</button>
+            <button type="button" onclick="reveal(${r.id})">ดูรหัส</button>
+            <button type="button" class="danger" onclick="removeAccount(${r.id})">ลบ</button>
+          </td>
+        `;
+        tb.appendChild(tr);
+      });
+    }
+
+    async function changePassword(id) {
+      const input = document.getElementById('pw-' + id);
+      const password = input?.value?.trim() || '';
+      if (!password) return alert('กรุณากรอกรหัสผ่านใหม่');
+
+      alert('เปลี่ยนรหัสผ่านเรียบร้อย (โหมดจำลอง)');
+      input.value = '';
+    }
+
+    async function reveal(id) {
+      alert('รหัสผ่านปัจจุบัน: ****** (จำลอง)');
+    }
+
+    async function removeAccount(id) {
+      const ok = confirm('ต้องการลบอีเมลนี้จริงหรือไม่?');
+      if (!ok) return;
+
+      let localUsers = JSON.parse(localStorage.getItem('admin_mock_users')) || MOCK_DATA.users;
+      localUsers = localUsers.filter(u => u.id !== id);
+      localStorage.setItem('admin_mock_users', JSON.stringify(localUsers));
+
+      alert('ลบผู้ใช้งานสำเร็จ');
+      load();
+    }
+
+    load();
+  </script>
+</body>
+</html>
