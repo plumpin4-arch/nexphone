@@ -414,6 +414,20 @@ app.post('/api/upload', authenticate, requireAdmin, (req, res) => {
   });
 });
 
+// Delete product (Admin only)
+app.delete('/api/products/:id', authenticate, requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ error: 'Invalid id' });
+  try {
+    const result = await pool.query('DELETE FROM products WHERE id = $1', [id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: 'Not found' });
+    res.json({ deleted: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'DB error' });
+  }
+});
+
 // Create new product (Admin only)
 app.post('/api/products', authenticate, requireAdmin, async (req, res) => {
   const { title, description, price, image } = req.body || {};

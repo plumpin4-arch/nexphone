@@ -226,43 +226,12 @@
   </div>
 
   <script>
-    const apiBaseUrl = window.location.protocol === 'file:' || (window.location.hostname === 'localhost' && window.location.port !== '3000')
-      ? 'http://localhost:3000/api'
-      : '/api';
+    const apiBaseUrl = '/api';
 
-    // รายการสินค้าครบถ้วนทั้ง 15 รุ่นจากภาพถ่าย
-    const FULL_DEFAULT_PRODUCTS = [
-      { id: 1, title: 'iPhone 14 Pro Max', price: 49999, image: 'https://via.placeholder.com/150' },
-      { id: 2, title: 'iPhone 14 Pro', price: 44999, image: 'https://via.placeholder.com/150' },
-      { id: 3, title: 'Samsung S24 Ultra', price: 47999, image: 'https://via.placeholder.com/150' },
-      { id: 4, title: 'Samsung Galaxy S24', price: 42999, image: 'https://via.placeholder.com/150' },
-      { id: 5, title: 'Google Pixel 8 Pro', price: 44999, image: 'https://via.placeholder.com/150' },
-      { id: 6, title: 'Google Pixel 8', price: 35999, image: 'https://via.placeholder.com/150' },
-      { id: 7, title: 'Xiaomi 14 Ultra', price: 38999, image: 'https://via.placeholder.com/150' },
-      { id: 8, title: 'Xiaomi 14', price: 28999, image: 'https://via.placeholder.com/150' },
-      { id: 9, title: 'OnePlus 12', price: 32999, image: 'https://via.placeholder.com/150' },
-      { id: 10, title: 'Nothing Phone 2', price: 25999, image: 'https://via.placeholder.com/150' },
-      { id: 11, title: 'OPPO Find X7', price: 29999, image: 'https://via.placeholder.com/150' },
-      { id: 12, title: 'Vivo X100', price: 27999, image: 'https://via.placeholder.com/150' },
-      { id: 13, title: 'Samsung Galaxy Z Fold6', price: 59999, image: 'https://via.placeholder.com/150' },
-      { id: 14, title: 'Asus Zenfone 10', price: 26999, image: 'https://via.placeholder.com/150' },
-      { id: 15, title: 'Realme GT 6', price: 24999, image: 'https://via.placeholder.com/150' }
-    ];
-
-    const MOCK_DATA = {
-      users: [
-        { id: 1, name: 'Administrator', email: 'admin@nexphone.com' },
-        { id: 2, name: 'Somchai User', email: 'somchai@gmail.com' }
-      ],
-      orders: [
-        { order_code: 'ORD-1001', product_title: 'iPhone 14 Pro Max', quantity: 1, price: 49999, created_at: new Date().toISOString() },
-        { order_code: 'ORD-1002', product_title: 'Samsung S24 Ultra', quantity: 2, price: 47999, created_at: new Date().toISOString() }
-      ],
-      stats: [
-        { product: 'iPhone 14 Pro Max', order_count: 1, total_units: 1, revenue: 49999 },
-        { product: 'Samsung S24 Ultra', order_count: 1, total_units: 2, revenue: 95998 }
-      ]
-    };
+    function authHeaders() {
+      const token = sessionStorage.getItem('nexphone_token') || localStorage.getItem('nexphone_token');
+      return { Authorization: 'Bearer ' + token };
+    }
 
     function logoutAdmin() {
       sessionStorage.removeItem('nexphone_token');
@@ -276,47 +245,28 @@
       return String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
     }
 
-    async function safeFetchJSON(url, options = {}) {
+    // เรียก API จริงเสมอ คืนค่า { ok, data, error } เพื่อให้แยกได้ว่าล้มเหลวเพราะอะไร
+    async function callApi(url, options = {}) {
       try {
         const res = await fetch(url, options);
-        const contentType = res.headers.get('content-type');
-        if (res.ok && contentType && contentType.includes('application/json')) {
-          return await res.json();
+        let data = null;
+        try { data = await res.json(); } catch (e) { /* no json body */ }
+        if (!res.ok) {
+          return { ok: false, status: res.status, error: (data && data.error) || `เกิดข้อผิดพลาด (HTTP ${res.status})` };
         }
+        return { ok: true, data };
       } catch (err) {
-        console.warn('API call failed:', url);
-      }
-      return null;
-    }
-
-    function getProducts() {
-      const stored = localStorage.getItem('admin_mock_products');
-      // หากข้อมูลใน localStorage มีน้อยกว่า 15 รุ่น ให้เขียนทับด้วยข้อมูล 15 รุ่นทันที
-      if (!stored || JSON.parse(stored).length < 15) {
-        localStorage.setItem('admin_mock_products', JSON.stringify(FULL_DEFAULT_PRODUCTS));
-        return FULL_DEFAULT_PRODUCTS;
-      }
-      return JSON.parse(stored);
-    }
-
-    function resetDefaultProducts() {
-      if (confirm('คุณต้องการล้างแคชเดิม แล้วดึงรายการสินค้าทั้ง 15 รุ่นกลับมาใช่หรือไม่?')) {
-        localStorage.setItem('admin_mock_products', JSON.stringify(FULL_DEFAULT_PRODUCTS));
-        load();
+        return { ok: false, status: 0, error: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ตหรือลองใหม่อีกครั้ง' };
       }
     }
 
-    function clearAllProducts() {
-      if (confirm('คุณต้องการลบรายการสินค้าทั้งหมดออกใช่หรือไม่?')) {
-        localStorage.setItem('admin_mock_products', JSON.stringify([]));
-        load();
-      }
-    }
+    let currentUsers = [];
+    let currentProducts = [];
+    let currentOrders = [];
+    let currentStats = [];
 
     async function load() {
       const token = sessionStorage.getItem('nexphone_token') || localStorage.getItem('nexphone_token');
-      const userStr = sessionStorage.getItem('nexphone_user') || localStorage.getItem('nexphone_user');
-      const user = userStr ? JSON.parse(userStr) : null;
 
       if (!token) {
         alert('กรุณาเข้าสู่ระบบเป็นแอดมินก่อน');
@@ -324,33 +274,34 @@
         return;
       }
 
-      let rows, stats, orders, products;
-
-      if (token === 'local-admin-token' || (user && user.role === 'admin')) {
-        rows = JSON.parse(localStorage.getItem('admin_mock_users')) || MOCK_DATA.users;
-        products = getProducts();
-        orders = MOCK_DATA.orders;
-        stats = MOCK_DATA.stats;
-      } else {
-        const me = await safeFetchJSON(`${apiBaseUrl}/me`, { headers: { Authorization: 'Bearer ' + token } });
-        if (!me || me.role !== 'admin') {
-          alert('เซสชันหมดอายุหรือไม่มีสิทธิ์แอดมิน');
-          window.location.href = 'login.html';
-          return;
-        }
-
-        const authHeader = { headers: { Authorization: 'Bearer ' + token } };
-        rows = await safeFetchJSON(`${apiBaseUrl}/logins`, authHeader) || MOCK_DATA.users;
-        stats = await safeFetchJSON(`${apiBaseUrl}/orders/stats`, authHeader) || MOCK_DATA.stats;
-        orders = await safeFetchJSON(`${apiBaseUrl}/orders`, authHeader) || MOCK_DATA.orders;
-        products = await safeFetchJSON(`${apiBaseUrl}/products`) || getProducts();
+      const me = await callApi(`${apiBaseUrl}/me`, { headers: authHeaders() });
+      if (!me.ok || !me.data || me.data.role !== 'admin') {
+        alert('เซสชันหมดอายุหรือไม่มีสิทธิ์แอดมิน กรุณาเข้าสู่ระบบใหม่');
+        logoutAdmin();
+        return;
       }
 
-      renderKpis(rows, stats, orders);
-      renderStats(stats);
-      renderOrders(orders);
-      renderProducts(products);
-      renderAccounts(rows);
+      const [usersRes, statsRes, ordersRes, productsRes] = await Promise.all([
+        callApi(`${apiBaseUrl}/logins`, { headers: authHeaders() }),
+        callApi(`${apiBaseUrl}/orders/stats`, { headers: authHeaders() }),
+        callApi(`${apiBaseUrl}/orders`, { headers: authHeaders() }),
+        callApi(`${apiBaseUrl}/products`)
+      ]);
+
+      currentUsers = usersRes.ok ? usersRes.data : [];
+      currentStats = statsRes.ok ? statsRes.data : [];
+      currentOrders = ordersRes.ok ? ordersRes.data : [];
+      currentProducts = productsRes.ok ? productsRes.data : [];
+
+      if (!usersRes.ok || !statsRes.ok || !ordersRes.ok || !productsRes.ok) {
+        console.warn('บางส่วนของข้อมูลโหลดไม่สำเร็จ', { usersRes, statsRes, ordersRes, productsRes });
+      }
+
+      renderKpis(currentUsers, currentStats, currentOrders);
+      renderStats(currentStats);
+      renderOrders(currentOrders);
+      renderProducts(currentProducts);
+      renderAccounts(currentUsers);
     }
 
     function renderKpis(rows, stats, orders) {
@@ -400,7 +351,7 @@
     function renderProducts(products) {
       const tbody = document.getElementById('productsBody');
       if (products.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#6b7280;padding:24px;">ไม่มีสินค้าในระบบ สามารถกดปุ่ม "+ เพิ่มสินค้า" หรือ "🔄 ดึงสินค้า 15 รุ่นใหม่ทั้งหมด" ได้ด้านบน</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#6b7280;padding:24px;">ไม่มีสินค้าในระบบ สามารถกดปุ่ม "+ เพิ่มสินค้า" ด้านบนได้</td></tr>';
         return;
       }
       tbody.innerHTML = products.map((product) => `
@@ -420,7 +371,26 @@
       `).join('');
     }
 
-    function addProduct() {
+    // ดึงข้อมูลสินค้าล่าสุดจากเซิร์ฟเวอร์ใหม่ (ไม่ใช่การรีเซ็ตเป็นค่าเริ่มต้น เพราะข้อมูลจริงอยู่ใน Neon แล้ว)
+    async function resetDefaultProducts() {
+      if (!confirm('ดึงรายการสินค้าล่าสุดจากฐานข้อมูลใหม่หรือไม่? (การแก้ไขที่ยังไม่บันทึกจะหายไป)')) return;
+      await load();
+      alert('อัปเดตรายการสินค้าจากฐานข้อมูลเรียบร้อยแล้ว');
+    }
+
+    // ลบสินค้าทั้งหมดออกจากฐานข้อมูลจริง (ลบทีละรายการผ่าน API)
+    async function clearAllProducts() {
+      if (!confirm('คุณต้องการลบสินค้าทั้งหมดออกจากฐานข้อมูลอย่างถาวรใช่หรือไม่? การกระทำนี้ย้อนกลับไม่ได้')) return;
+
+      for (const product of currentProducts) {
+        await callApi(`${apiBaseUrl}/products/${product.id}`, { method: 'DELETE', headers: authHeaders() });
+      }
+
+      alert('ลบสินค้าทั้งหมดเรียบร้อยแล้ว');
+      load();
+    }
+
+    async function addProduct() {
       const titleInput = document.getElementById('new-title');
       const priceInput = document.getElementById('new-price');
       const imageInput = document.getElementById('new-image');
@@ -429,25 +399,16 @@
       const price = Number(priceInput.value);
       const image = imageInput.value.trim() || 'https://via.placeholder.com/150';
 
-      if (!title) {
-        alert('กรุณากรอกชื่อรุ่นมือถือ');
-        return;
-      }
-      if (!price || price <= 0) {
-        alert('กรุณากรอกราคาที่ถูกต้อง');
-        return;
-      }
+      if (!title) return alert('กรุณากรอกชื่อรุ่นมือถือ');
+      if (!price || price <= 0) return alert('กรุณากรอกราคาที่ถูกต้อง');
 
-      let products = getProducts();
-      const newProduct = {
-        id: Date.now(),
-        title: title,
-        price: price,
-        image: image
-      };
+      const result = await callApi(`${apiBaseUrl}/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ title, description: '', price, image })
+      });
 
-      products.push(newProduct);
-      localStorage.setItem('admin_mock_products', JSON.stringify(products));
+      if (!result.ok) return alert('เพิ่มสินค้าไม่สำเร็จ: ' + result.error);
 
       titleInput.value = '';
       priceInput.value = '';
@@ -457,12 +418,15 @@
       load();
     }
 
-    function deleteProduct(id) {
+    async function deleteProduct(id) {
       if (!confirm('คุณต้องการลบสินค้านี้ใช่หรือไม่?')) return;
 
-      let products = getProducts();
-      products = products.filter(p => p.id !== id);
-      localStorage.setItem('admin_mock_products', JSON.stringify(products));
+      const result = await callApi(`${apiBaseUrl}/products/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders()
+      });
+
+      if (!result.ok) return alert('ลบสินค้าไม่สำเร็จ: ' + result.error);
 
       alert('ลบสินค้าเรียบร้อยแล้ว');
       load();
@@ -478,13 +442,14 @@
         return false;
       }
 
-      let products = getProducts();
-      products = products.map(p => p.id === id ? { ...p, price, image: imageInput?.value?.trim() || '' } : p);
-      
-      try {
-        localStorage.setItem('admin_mock_products', JSON.stringify(products));
-      } catch (e) {
-        alert('หน่วยความจำเต็ม ไม่สามารถบันทึกได้ กรุณาย่อขนาดภาพลงเพิ่มเติม');
+      const result = await callApi(`${apiBaseUrl}/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ price, image: imageInput?.value?.trim() || '' })
+      });
+
+      if (!result.ok) {
+        alert('บันทึกไม่สำเร็จ: ' + result.error);
         return false;
       }
 
@@ -493,7 +458,7 @@
       return true;
     }
 
-    // ฟังก์ชันอัปโหลดรูปภาพพร้อมย่อขนาดภาพอัตโนมัติ (ไม่ทำให้พื้นที่เต็ม)
+    // อัปโหลดรูปภาพขึ้นเซิร์ฟเวอร์จริงผ่าน /api/upload แล้วผูก URL กับสินค้า
     async function uploadImage(id) {
       const fileInput = document.getElementById(`file-${id}`);
       const imageInput = document.getElementById(`image-${id}`);
@@ -503,27 +468,20 @@
       if (!file.type.startsWith('image/')) return alert('รองรับเฉพาะไฟล์ภาพเท่านั้น');
 
       const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.src = e.target.result;
-        img.onload = async () => {
-          // ย่อขนาดรูปภาพให้กว้างไม่เกิน 350px เพื่อความรวดเร็วและประหยัดพื้นที่
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 350; 
-          const scaleSize = MAX_WIDTH / img.width;
-          canvas.width = MAX_WIDTH;
-          canvas.height = img.height * scaleSize;
+      reader.onload = async (e) => {
+        const base64Data = e.target.result.split(',')[1];
 
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const uploadResult = await callApi(`${apiBaseUrl}/upload`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ filename: file.name, data: base64Data })
+        });
 
-          // แปลงเป็น JPG ที่ความคมชัด 70%
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        if (!uploadResult.ok) return alert('อัปโหลดรูปไม่สำเร็จ: ' + uploadResult.error);
 
-          imageInput.value = compressedDataUrl;
-          const saved = await saveProduct(id, { silent: true });
-          if (saved) alert('อัปโหลดและบันทึกรูปภาพเรียบร้อยแล้ว!');
-        };
+        imageInput.value = uploadResult.data.url;
+        const saved = await saveProduct(id, { silent: true });
+        if (saved) alert('อัปโหลดและบันทึกรูปภาพเรียบร้อยแล้ว!');
       };
       reader.readAsDataURL(file);
     }
@@ -554,21 +512,38 @@
       const password = input?.value?.trim() || '';
       if (!password) return alert('กรุณากรอกรหัสผ่านใหม่');
 
-      alert('เปลี่ยนรหัสผ่านเรียบร้อย (โหมดจำลอง)');
+      const result = await callApi(`${apiBaseUrl}/logins/${id}/password`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ password })
+      });
+
+      if (!result.ok) return alert('เปลี่ยนรหัสผ่านไม่สำเร็จ: ' + result.error);
+
+      alert('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
       input.value = '';
     }
 
     async function reveal(id) {
-      alert('รหัสผ่านปัจจุบัน: ****** (จำลอง)');
+      const result = await callApi(`${apiBaseUrl}/logins/${id}/password`, {
+        headers: authHeaders()
+      });
+
+      if (!result.ok) return alert('ดูรหัสผ่านไม่สำเร็จ: ' + result.error);
+
+      alert('รหัสผ่านปัจจุบัน: ' + (result.data.password ?? '(ไม่สามารถถอดรหัสได้)'));
     }
 
     async function removeAccount(id) {
-      const ok = confirm('ต้องการลบอีเมลนี้จริงหรือไม่?');
+      const ok = confirm('ต้องการลบบัญชีนี้จริงหรือไม่? การลบไม่สามารถย้อนกลับได้');
       if (!ok) return;
 
-      let localUsers = JSON.parse(localStorage.getItem('admin_mock_users')) || MOCK_DATA.users;
-      localUsers = localUsers.filter(u => u.id !== id);
-      localStorage.setItem('admin_mock_users', JSON.stringify(localUsers));
+      const result = await callApi(`${apiBaseUrl}/logins/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders()
+      });
+
+      if (!result.ok) return alert('ลบผู้ใช้งานไม่สำเร็จ: ' + result.error);
 
       alert('ลบผู้ใช้งานสำเร็จ');
       load();
@@ -576,5 +551,4 @@
 
     load();
   </script>
-</body>
 </html>
